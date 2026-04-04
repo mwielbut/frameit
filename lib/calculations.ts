@@ -1,4 +1,5 @@
 export interface FrameInputs {
+  name: string;
   artWidth: number;
   artHeight: number;
   matWidth: number;
@@ -21,6 +22,7 @@ export interface FrameInputs {
  */
 export interface FrameGeometry {
   // echoed inputs so callers take one prop instead of two
+  name: string;
   artWidth: number;
   artHeight: number;
   matWidth: number;
@@ -57,7 +59,7 @@ export interface FrameGeometry {
 export const ROUGH_CUT_ALLOWANCE = 0.5;
 
 export function frameGeometry(inputs: FrameInputs): FrameGeometry {
-  const { artWidth, artHeight, matWidth, matOverlap, frameWidth, rabbetDepth } = inputs;
+  const { name, artWidth, artHeight, matWidth, matOverlap, frameWidth, rabbetDepth } = inputs;
 
   // matWidth is the visible mat border measured from the mat opening edge.
   const matOpeningWidth = artWidth - 2 * matOverlap;
@@ -83,6 +85,7 @@ export function frameGeometry(inputs: FrameInputs): FrameGeometry {
   const shortSideRough = shortSide + ROUGH_CUT_ALLOWANCE;
 
   return {
+    name,
     artWidth,
     artHeight,
     matWidth,

@@ -8,6 +8,7 @@ import { FrameInputs, frameGeometry } from "../lib/calculations";
 
 export default function Home() {
   const [inputs, setInputs] = useState<FrameInputs>({
+    name: "",
     artWidth: 16,
     artHeight: 20,
     matWidth: 2.5,
@@ -18,7 +19,7 @@ export default function Home() {
 
   const geo = useMemo(() => frameGeometry(inputs), [inputs]);
 
-  const handleInputChange = (key: keyof FrameInputs, value: number) => {
+  const handleInputChange = <K extends keyof FrameInputs>(key: K, value: FrameInputs[K]) => {
     setInputs((prev) => ({ ...prev, [key]: value }));
   };
 

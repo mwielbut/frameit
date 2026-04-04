@@ -8,6 +8,7 @@ interface PrintSheetProps {
 
 export default function PrintSheet({ geo }: PrintSheetProps) {
   const {
+    name,
     artWidth,
     artHeight,
     matWidth,
@@ -64,6 +65,9 @@ export default function PrintSheet({ geo }: PrintSheetProps) {
         <div>
           <div className="font-mono text-[22px] font-bold tracking-[5px] text-[#2C2C2C]">FRAMEIT</div>
           <div className="text-[13px] text-[#6B6860] mt-0.5">Picture Frame Cut Sheet</div>
+          {name.trim() && (
+            <div className="text-[15px] font-semibold text-[#2C2C2C] mt-1.5">{name}</div>
+          )}
         </div>
         <div className="text-right text-[10px] font-mono text-[#6B6860]">
           <div>GENERATED</div>
