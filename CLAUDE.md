@@ -21,10 +21,10 @@ No test framework or linter is currently configured.
 
 The app is a single client-side page with three layers:
 
-- **`app/page.tsx`** — State owner. Holds all calculator inputs in React state, computes derived results via `calculateFrame()`, passes props down.
-- **`components/ControlsPanel.tsx`** — Left panel (380px). Artwork size inputs, sliders for mat/frame parameters, and the computed cut list card. Uses `components/Slider.tsx` for styled range inputs.
-- **`components/FrameDiagram.tsx`** — Right panel. SVG visualization with proportionally-scaled nested rectangles (frame → mat → artwork), dimension annotation lines, and a corner detail inset.
-- **`lib/calculations.ts`** — Pure functions. `calculateFrame()` computes outer dimensions, cut lengths, and total lumber. `formatFraction()` converts decimals to display fractions (e.g., 0.25 → "1/4"). Key formula: outer dimension = artwork + 2×mat + 2×frame (mat overlap does not affect outer size).
+- **`app/page.tsx`** — State owner. Holds `FrameInputs` in React state, memoizes a single `FrameGeometry` via `frameGeometry()`, passes it as one `geo` prop to each child.
+- **`components/ControlsPanel.tsx`** — Left panel (380px). Artwork size inputs, sliders for mat/frame parameters, and the computed cut list card. Reads `geo` for both input values (echoed) and derived dimensions. Uses `components/Slider.tsx` for styled range inputs.
+- **`components/FrameDiagram.tsx`** — Right panel. SVG visualization with proportionally-scaled nested rectangles (frame → mat → artwork), dimension annotation lines, and Mat/Glass Overview inset panels. All dimensions read from `geo` — no inline arithmetic.
+- **`lib/calculations.ts`** — Pure functions. `frameGeometry(inputs)` is the single source of truth for every derived dimension: mat opening, mat board (with rabbet), glass panel, frame outer, and the cut list. `formatFraction()` converts decimals to display fractions (e.g., 0.25 → "1/4"); `formatPair(w, h)` formats a width × height pair. Key invariants: mat opening = artwork − 2×overlap; mat board = opening + 2×mat + 2×rabbet; frame outer = opening + 2×mat + 2×frame (rabbet excluded — the board tucks behind the frame lip).
 
 ## Deployment
 

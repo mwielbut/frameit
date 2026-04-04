@@ -1,23 +1,34 @@
 "use client";
 
-import { FrameInputs, FrameResults, formatFraction } from "../lib/calculations";
+import { FrameGeometry, formatFraction, formatPair } from "../lib/calculations";
 
 interface PrintSheetProps {
-  inputs: FrameInputs;
-  results: FrameResults;
+  geo: FrameGeometry;
 }
 
-export default function PrintSheet({ inputs, results }: PrintSheetProps) {
-  const { artWidth, artHeight, matWidth, matOverlap, frameWidth, rabbetDepth } = inputs;
-  const { longSide, shortSide, longSideRough, shortSideRough, roughCutAllowance, outerWidth, outerHeight, totalLumber } = results;
-
-  const matOpenW = artWidth - 2 * matOverlap;
-  const matOpenH = artHeight - 2 * matOverlap;
-  const matBoardW = matOpenW + 2 * matWidth + 2 * rabbetDepth;
-  const matBoardH = matOpenH + 2 * matWidth + 2 * rabbetDepth;
-  // Glass sits in the same rabbet opening as the mat board.
-  const glassW = matBoardW;
-  const glassH = matBoardH;
+export default function PrintSheet({ geo }: PrintSheetProps) {
+  const {
+    artWidth,
+    artHeight,
+    matWidth,
+    matOverlap,
+    frameWidth,
+    rabbetDepth,
+    longSide,
+    shortSide,
+    longSideRough,
+    shortSideRough,
+    roughCutAllowance,
+    outerWidth,
+    outerHeight,
+    totalLumber,
+    matOpeningWidth,
+    matOpeningHeight,
+    matBoardWidth,
+    matBoardHeight,
+    glassWidth,
+    glassHeight,
+  } = geo;
 
   const date = new Date().toLocaleDateString(undefined, {
     year: "numeric",
@@ -63,12 +74,12 @@ export default function PrintSheet({ inputs, results }: PrintSheetProps) {
       {/* Specs grid */}
       <SectionTitle>SPECIFICATIONS</SectionTitle>
       <div className="grid grid-cols-2 gap-x-8 gap-y-2 mb-5 text-[12px]">
-        <Spec label="Artwork" value={`${formatFraction(artWidth)}" × ${formatFraction(artHeight)}"`} />
+        <Spec label="Artwork" value={formatPair(artWidth, artHeight)} />
         <Spec label="Frame width" value={`${formatFraction(frameWidth)}"`} />
         <Spec label="Mat width (visible)" value={`${formatFraction(matWidth)}"`} />
         <Spec label="Rabbet depth" value={`${formatFraction(rabbetDepth)}"`} />
         <Spec label="Mat overlap" value={`${formatFraction(matOverlap)}"`} />
-        <Spec label="Outer frame" value={`${formatFraction(outerWidth)}" × ${formatFraction(outerHeight)}"`} />
+        <Spec label="Outer frame" value={formatPair(outerWidth, outerHeight)} />
       </div>
 
       {/* Two-column: cut list + diagram */}
@@ -92,8 +103,8 @@ export default function PrintSheet({ inputs, results }: PrintSheetProps) {
           <SectionTitle>MAT BOARD</SectionTitle>
           <table className="w-full text-[12px] border-collapse mb-4">
             <tbody>
-              <Row label="Board size (order this)" value={`${formatFraction(matBoardW)}" × ${formatFraction(matBoardH)}"`} strong />
-              <Row label="Opening (cut this)" value={`${formatFraction(matOpenW)}" × ${formatFraction(matOpenH)}"`} strong />
+              <Row label="Board size (order this)" value={formatPair(matBoardWidth, matBoardHeight)} strong />
+              <Row label="Opening (cut this)" value={formatPair(matOpeningWidth, matOpeningHeight)} strong />
               <Row label="Visible border" value={`${formatFraction(matWidth)}" all sides`} />
             </tbody>
           </table>
@@ -101,7 +112,7 @@ export default function PrintSheet({ inputs, results }: PrintSheetProps) {
           <SectionTitle>GLASS PANEL</SectionTitle>
           <table className="w-full text-[12px] border-collapse">
             <tbody>
-              <Row label="Panel size (order this)" value={`${formatFraction(glassW)}" × ${formatFraction(glassH)}"`} strong />
+              <Row label="Panel size (order this)" value={formatPair(glassWidth, glassHeight)} strong />
               <Row label="Note" value="Fits in frame rabbet" />
             </tbody>
           </table>
