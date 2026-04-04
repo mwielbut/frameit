@@ -60,3 +60,27 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+/* Print layout: one-page cut sheet */
+@page {
+  size: letter;
+  margin: 0.5in;
+}
+
+@media print {
+  html, body {
+    background: #FFFFFF !important;
+    color: #2C2C2C !important;
+  }
+  .print-sheet {
+    width: 100%;
+    font-family: var(--font-sans);
+    color: #2C2C2C;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .print-sheet svg {
+    max-width: 100%;
+    height: auto;
+  }
+}

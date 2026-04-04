@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import ControlsPanel from "../components/ControlsPanel";
 import FrameDiagram from "../components/FrameDiagram";
+import PrintSheet from "../components/PrintSheet";
 import { FrameInputs, calculateFrame } from "../lib/calculations";
 
 export default function Home() {
@@ -22,9 +23,12 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden">
-      <ControlsPanel inputs={inputs} results={results} onInputChange={handleInputChange} />
-      <FrameDiagram inputs={inputs} results={results} />
-    </div>
+    <>
+      <div className="flex h-screen w-full overflow-hidden print:hidden">
+        <ControlsPanel inputs={inputs} results={results} onInputChange={handleInputChange} />
+        <FrameDiagram inputs={inputs} results={results} />
+      </div>
+      <PrintSheet inputs={inputs} results={results} />
+    </>
   );
 }

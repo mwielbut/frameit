@@ -50,11 +50,17 @@ export default function FrameDiagram({ inputs, results }: FrameDiagramProps) {
   const dimGap = 30;
   const tickLen = 13;
 
-  // Corner detail box
+  // Side-panel boxes (Mat Overview and Glass Overview)
   const cdX = 760;
   const cdY = 130;
   const cdW = 250;
   const cdH = 220;
+
+  // Glass Overview box (below Mat Overview)
+  const gX = cdX;
+  const gY = cdY + cdH + 24;
+  const gW = cdW;
+  const gH = 160;
 
   return (
     <div className="flex-1 h-full bg-[#F8F6F1] overflow-hidden flex items-center justify-center">
@@ -129,48 +135,80 @@ export default function FrameDiagram({ inputs, results }: FrameDiagramProps) {
 
         {/* Artwork dimension lines */}
         {/* Horizontal artwork width */}
-        <line x1={artX} y1={artY + artDisplayH + 16} x2={artX + artDisplayW} y2={artY + artDisplayH + 16} stroke="#C25B56" opacity={0.7} />
-        <line x1={artX} y1={artY + artDisplayH + 10} x2={artX} y2={artY + artDisplayH + 22} stroke="#C25B56" opacity={0.7} />
-        <line x1={artX + artDisplayW} y1={artY + artDisplayH + 10} x2={artX + artDisplayW} y2={artY + artDisplayH + 22} stroke="#C25B56" opacity={0.7} />
-        <text x={artX + artDisplayW / 2} y={artY + artDisplayH + 32} textAnchor="middle" className="font-mono" fontSize={10} fill="#C25B56" opacity={0.7}>
-          {artWidth}&quot;
-        </text>
+        <line x1={artX} y1={artY + artDisplayH + 16} x2={artX + artDisplayW} y2={artY + artDisplayH + 16} stroke="#C25B56" strokeWidth={1.75} />
+        <line x1={artX} y1={artY + artDisplayH + 10} x2={artX} y2={artY + artDisplayH + 22} stroke="#C25B56" strokeWidth={1.75} />
+        <line x1={artX + artDisplayW} y1={artY + artDisplayH + 10} x2={artX + artDisplayW} y2={artY + artDisplayH + 22} stroke="#C25B56" strokeWidth={1.75} />
+        <LabelPill
+          cx={artX + artDisplayW / 2}
+          cy={artY + artDisplayH + 28}
+          text={`${artWidth}"`}
+          fontSize={10}
+          color="#C25B56"
+        />
 
         {/* Vertical artwork height */}
-        <line x1={artX + artDisplayW + 16} y1={artY} x2={artX + artDisplayW + 16} y2={artY + artDisplayH} stroke="#C25B56" opacity={0.7} />
-        <line x1={artX + artDisplayW + 10} y1={artY} x2={artX + artDisplayW + 22} y2={artY} stroke="#C25B56" opacity={0.7} />
-        <line x1={artX + artDisplayW + 10} y1={artY + artDisplayH} x2={artX + artDisplayW + 22} y2={artY + artDisplayH} stroke="#C25B56" opacity={0.7} />
-        <text x={artX + artDisplayW + 32} y={artY + artDisplayH / 2 + 4} textAnchor="middle" className="font-mono" fontSize={10} fill="#C25B56" opacity={0.7} transform={`rotate(-90, ${artX + artDisplayW + 32}, ${artY + artDisplayH / 2 + 4})`}>
-          {artHeight}&quot;
-        </text>
+        <line x1={artX + artDisplayW + 16} y1={artY} x2={artX + artDisplayW + 16} y2={artY + artDisplayH} stroke="#C25B56" strokeWidth={1.75} />
+        <line x1={artX + artDisplayW + 10} y1={artY} x2={artX + artDisplayW + 22} y2={artY} stroke="#C25B56" strokeWidth={1.75} />
+        <line x1={artX + artDisplayW + 10} y1={artY + artDisplayH} x2={artX + artDisplayW + 22} y2={artY + artDisplayH} stroke="#C25B56" strokeWidth={1.75} />
+        <LabelPill
+          cx={artX + artDisplayW + 32}
+          cy={artY + artDisplayH / 2}
+          text={`${artHeight}"`}
+          fontSize={10}
+          color="#C25B56"
+          rotate={-90}
+        />
 
         {/* Mat width annotation (right side): from opening edge to mat edge */}
         {matWidth > 0 && (() => {
           const openingTop = artY + matOverlap * scale;
+          const midY = (openingTop + matY) / 2;
           return (
             <>
-              <line x1={artX + artDisplayW + 55} y1={openingTop} x2={artX + artDisplayW + 55} y2={matY} stroke="#C25B56" opacity={0.6} />
-              <line x1={artX + artDisplayW + 49} y1={openingTop} x2={artX + artDisplayW + 61} y2={openingTop} stroke="#C25B56" opacity={0.6} />
-              <line x1={artX + artDisplayW + 49} y1={matY} x2={artX + artDisplayW + 61} y2={matY} stroke="#C25B56" opacity={0.6} />
-              <text x={artX + artDisplayW + 70} y={(openingTop + matY) / 2 + 0} className="font-mono" fontSize={9} fill="#C25B56">
-                {formatFraction(matWidth)}&quot;
-              </text>
-              <text x={artX + artDisplayW + 70} y={(openingTop + matY) / 2 + 12} className="font-mono" fontSize={8} letterSpacing={2} fill="#9A968E">
-                MAT
-              </text>
+              <line x1={artX + artDisplayW + 55} y1={openingTop} x2={artX + artDisplayW + 55} y2={matY} stroke="#C25B56" strokeWidth={1.75} />
+              <line x1={artX + artDisplayW + 49} y1={openingTop} x2={artX + artDisplayW + 61} y2={openingTop} stroke="#C25B56" strokeWidth={1.75} />
+              <line x1={artX + artDisplayW + 49} y1={matY} x2={artX + artDisplayW + 61} y2={matY} stroke="#C25B56" strokeWidth={1.75} />
+              <LabelPill
+                cx={artX + artDisplayW + 85}
+                cy={midY - 4}
+                text={`${formatFraction(matWidth)}"`}
+                fontSize={9}
+                color="#C25B56"
+                anchor="start"
+              />
+              <LabelPill
+                cx={artX + artDisplayW + 85}
+                cy={midY + 8}
+                text="MAT"
+                fontSize={8}
+                color="#6B6860"
+                anchor="start"
+                letterSpacing={2}
+              />
             </>
           );
         })()}
 
         {/* Frame width annotation */}
-        <line x1={artX + artDisplayW + 55} y1={matY} x2={artX + artDisplayW + 55} y2={fy} stroke="#C25B56" opacity={0.6} />
-        <line x1={artX + artDisplayW + 49} y1={fy} x2={artX + artDisplayW + 61} y2={fy} stroke="#C25B56" opacity={0.6} />
-        <text x={artX + artDisplayW + 70} y={(matY + fy) / 2 + 0} className="font-mono" fontSize={9} fill="#C25B56">
-          {formatFraction(frameWidth)}&quot;
-        </text>
-        <text x={artX + artDisplayW + 70} y={(matY + fy) / 2 + 12} className="font-mono" fontSize={8} letterSpacing={2} fill="#9A968E">
-          FRAME
-        </text>
+        <line x1={artX + artDisplayW + 55} y1={matY} x2={artX + artDisplayW + 55} y2={fy} stroke="#C25B56" strokeWidth={1.75} />
+        <line x1={artX + artDisplayW + 49} y1={fy} x2={artX + artDisplayW + 61} y2={fy} stroke="#C25B56" strokeWidth={1.75} />
+        <LabelPill
+          cx={artX + artDisplayW + 85}
+          cy={(matY + fy) / 2 - 4}
+          text={`${formatFraction(frameWidth)}"`}
+          fontSize={9}
+          color="#C25B56"
+          anchor="start"
+        />
+        <LabelPill
+          cx={artX + artDisplayW + 85}
+          cy={(matY + fy) / 2 + 8}
+          text="FRAME"
+          fontSize={8}
+          color="#6B6860"
+          anchor="start"
+          letterSpacing={2}
+        />
 
         {/* Mat Overview Box */}
         {(() => {
@@ -230,24 +268,99 @@ export default function FrameDiagram({ inputs, results }: FrameDiagramProps) {
           );
         })()}
 
-        {/* Bottom summary line */}
-        <line x1={40} y1={vh - 120} x2={vw - 40} y2={vh - 120} stroke="#B8B4AC" />
+        {/* Glass Overview Box */}
+        {(() => {
+          // Glass sits in the same rabbet opening as the mat, so it matches
+          // the mat board outer dimensions.
+          const glassW = artWidth - 2 * matOverlap + 2 * matWidth + 2 * rabbetDepth;
+          const glassH = artHeight - 2 * matOverlap + 2 * matWidth + 2 * rabbetDepth;
 
-        <text x={cx} y={vh - 90} textAnchor="middle" className="font-mono" fontSize={13} fontWeight={600} letterSpacing={2} fill="#2C2C2C">
-          TOTAL OUTER: {formatFraction(outerWidth)}&quot; &times; {formatFraction(outerHeight)}&quot;
-        </text>
-        <text x={cx} y={vh - 70} textAnchor="middle" className="font-mono" fontSize={9} letterSpacing={1} fill="#6B6860">
-          Mat opening: {formatFraction(artWidth - 2 * matOverlap)}&quot; &times; {formatFraction(artHeight - 2 * matOverlap)}&quot; | Mat width: {formatFraction(matWidth)}&quot; | Frame: {formatFraction(frameWidth)}&quot;
-        </text>
+          // Mini glass drawing
+          const drawMax = 70;
+          const miniScale = Math.min(drawMax / glassW, drawMax / glassH);
+          const miniW = glassW * miniScale;
+          const miniH = glassH * miniScale;
+          const miniX = gX + gW / 2 - miniW / 2;
+          const miniY = gY + 44;
 
-        {/* FIG label */}
-        <text x={40} y={vh - 40} className="font-mono" fontSize={11} fontWeight={500} letterSpacing={3} fill="#4A6FA5">
-          FIG. 01
-        </text>
-        <text x={40} y={vh - 24} fontSize={10} fill="#9A968E">
-          Frame assembly, top-down cross-section view
-        </text>
+          return (
+            <>
+              <rect x={gX} y={gY} width={gW} height={gH} rx={2} fill="#FFFFFF" stroke="#D4D0C8" />
+              <text x={gX + 12} y={gY + 16} className="font-mono" fontSize={10} fontWeight={500} letterSpacing={2} fill="#2C2C2C">
+                GLASS OVERVIEW
+              </text>
+              <text x={gX + 12} y={gY + 30} className="font-mono" fontSize={9} fill="#9A968E">
+                Dimensions for ordering glass panel
+              </text>
+
+              {/* Mini glass drawing */}
+              <rect x={miniX} y={miniY} width={miniW} height={miniH} fill="#EAF1F5" stroke="#4A6FA5" strokeOpacity={0.5} />
+              {/* Shine line */}
+              <line x1={miniX + miniW * 0.15} y1={miniY + miniH * 0.15} x2={miniX + miniW * 0.35} y2={miniY + miniH * 0.85} stroke="#FFFFFF" strokeWidth={2} opacity={0.8} />
+
+              {/* Labels */}
+              <text x={gX + 12} y={gY + gH - 22} className="font-mono" fontSize={9} fontWeight={500} fill="#4A6FA5">
+                SIZE
+              </text>
+              <text x={gX + gW - 12} y={gY + gH - 22} textAnchor="end" className="font-mono" fontSize={10} fontWeight={600} fill="#2C2C2C">
+                {formatFraction(glassW)}&quot; &times; {formatFraction(glassH)}&quot;
+              </text>
+              <text x={gX + 12} y={gY + gH - 10} className="font-mono" fontSize={8} fill="#9A968E">
+                Fits in frame rabbet (same as mat board)
+              </text>
+            </>
+          );
+        })()}
+
       </svg>
     </div>
   );
+}
+
+interface LabelPillProps {
+  cx: number;
+  cy: number;
+  text: string;
+  fontSize: number;
+  color: string;
+  anchor?: "start" | "middle" | "end";
+  rotate?: number;
+  letterSpacing?: number;
+}
+
+// Text with a cream background pill so labels stay legible over the
+// dark frame color. Width is approximated from character count.
+function LabelPill({ cx, cy, text, fontSize, color, anchor = "middle", rotate, letterSpacing = 0 }: LabelPillProps) {
+  const charWidth = fontSize * 0.62;
+  const textWidth = text.length * charWidth + (text.length - 1) * letterSpacing;
+  const padX = 5;
+  const padY = 3;
+  const rectW = textWidth + 2 * padX;
+  const rectH = fontSize + 2 * padY;
+  const rectX =
+    anchor === "middle" ? cx - rectW / 2 : anchor === "end" ? cx - rectW : cx - padX;
+  const rectY = cy - fontSize / 2 - padY + 1;
+
+  const content = (
+    <>
+      <rect x={rectX} y={rectY} width={rectW} height={rectH} rx={3} fill="#F8F6F1" stroke="#D4D0C8" strokeWidth={0.75} />
+      <text
+        x={cx}
+        y={cy + fontSize / 3}
+        textAnchor={anchor}
+        className="font-mono"
+        fontSize={fontSize}
+        fontWeight={500}
+        fill={color}
+        letterSpacing={letterSpacing}
+      >
+        {text}
+      </text>
+    </>
+  );
+
+  if (rotate) {
+    return <g transform={`rotate(${rotate}, ${cx}, ${cy})`}>{content}</g>;
+  }
+  return content;
 }

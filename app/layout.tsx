@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "FRAMEIT — Picture Frame Calculator",
-  description: "Calculate wood cut dimensions for custom picture frames",
+  description: "Calculate wood cut and mat cut dimensions for custom picture frames",
 };
 
 export default function RootLayout({

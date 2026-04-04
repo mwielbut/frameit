@@ -1,6 +1,6 @@
 "use client";
 
-import { Ruler, ImageIcon, Square, Maximize2, Frame, Layers, Scissors } from "lucide-react";
+import { Ruler, ImageIcon, Square, Maximize2, Frame, Layers, Scissors, Printer } from "lucide-react";
 import Slider from "./Slider";
 import { FrameInputs, FrameResults, formatFraction } from "../lib/calculations";
 
@@ -37,7 +37,7 @@ export default function ControlsPanel({ inputs, results, onInputChange }: Contro
           </span>
         </div>
         <p className="text-[13px] text-[#6B6860] leading-[1.4]">
-          Calculate wood cut dimensions for custom picture frames
+          Calculate wood cut and mat cut dimensions for custom picture frames
         </p>
       </div>
 
@@ -143,9 +143,17 @@ export default function ControlsPanel({ inputs, results, onInputChange }: Contro
       <div className="flex flex-col gap-3.5">
         <SectionLabel icon={Scissors} label="CUT LIST" color="#C25B56" />
         <div className="rounded bg-[#F8F6F1] border border-[#D4D0C8] p-4 flex flex-col gap-3">
-          <CutRow label="Long sides (&times;2)" value={`${formatFraction(results.longSide)}"`} />
+          <CutGroup
+            label="Long sides (&times;2)"
+            rough={`${formatFraction(results.longSideRough)}"`}
+            exact={`${formatFraction(results.longSide)}"`}
+          />
           <div className="h-px bg-[#D4D0C8]" />
-          <CutRow label="Short sides (&times;2)" value={`${formatFraction(results.shortSide)}"`} />
+          <CutGroup
+            label="Short sides (&times;2)"
+            rough={`${formatFraction(results.shortSideRough)}"`}
+            exact={`${formatFraction(results.shortSide)}"`}
+          />
           <div className="h-px bg-[#D4D0C8]" />
           <CutRow label="Miter angle" value={`${results.miterAngle}\u00B0`} />
           <div className="h-px bg-[#D4D0C8]" />
@@ -156,15 +164,21 @@ export default function ControlsPanel({ inputs, results, onInputChange }: Contro
               {formatFraction(results.totalLumber)}&quot;
             </span>
           </div>
+          <p className="text-[10px] text-[#9A968E] leading-[1.4]">
+            Rough cut includes {formatFraction(results.roughCutAllowance)}&quot; extra for waste; trim to exact length with 45&deg; miters.
+          </p>
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="flex items-center justify-center pt-2">
-        <span className="font-mono text-[9px] text-[#9A968E] tracking-[0.5px]">
-          All measurements include {formatFraction(inputs.rabbetDepth)}&quot; rabbet allowance
-        </span>
-      </div>
+      {/* Print button */}
+      <button
+        type="button"
+        onClick={() => window.print()}
+        className="flex items-center justify-center gap-2 h-10 rounded bg-[#4A6FA5] hover:bg-[#3d5d8a] transition-colors text-white font-mono text-[12px] font-medium tracking-[2px]"
+      >
+        <Printer size={14} />
+        PRINT CUT SHEET
+      </button>
     </div>
   );
 }
@@ -174,6 +188,22 @@ function CutRow({ label, value }: { label: string; value: string }) {
     <div className="flex items-center justify-between">
       <span className="text-[13px] text-[#6B6860]" dangerouslySetInnerHTML={{ __html: label }} />
       <span className="font-mono text-[14px] font-semibold text-[#2C2C2C]">{value}</span>
+    </div>
+  );
+}
+
+function CutGroup({ label, rough, exact }: { label: string; rough: string; exact: string }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-[13px] font-semibold text-[#2C2C2C]" dangerouslySetInnerHTML={{ __html: label }} />
+      <div className="flex items-center justify-between pl-3">
+        <span className="text-[12px] text-[#6B6860]">Rough cut</span>
+        <span className="font-mono text-[13px] text-[#2C2C2C]">{rough}</span>
+      </div>
+      <div className="flex items-center justify-between pl-3">
+        <span className="text-[12px] text-[#6B6860]">Miter to</span>
+        <span className="font-mono text-[13px] font-semibold text-[#2C2C2C]">{exact}</span>
+      </div>
     </div>
   );
 }

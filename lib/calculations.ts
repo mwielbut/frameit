@@ -10,11 +10,18 @@ export interface FrameInputs {
 export interface FrameResults {
   longSide: number;
   shortSide: number;
+  longSideRough: number;
+  shortSideRough: number;
+  roughCutAllowance: number;
   outerWidth: number;
   outerHeight: number;
   totalLumber: number;
   miterAngle: number;
 }
+
+// Extra length added to each piece before the final miter cut, to account
+// for waste and blade kerf during the two miter cuts.
+export const ROUGH_CUT_ALLOWANCE = 0.5;
 
 export function calculateFrame(inputs: FrameInputs): FrameResults {
   const { artWidth, artHeight, matWidth, matOverlap, frameWidth } = inputs;
@@ -26,13 +33,18 @@ export function calculateFrame(inputs: FrameInputs): FrameResults {
 
   const longSide = Math.max(outerWidth, outerHeight);
   const shortSide = Math.min(outerWidth, outerHeight);
+  const longSideRough = longSide + ROUGH_CUT_ALLOWANCE;
+  const shortSideRough = shortSide + ROUGH_CUT_ALLOWANCE;
 
   return {
     longSide,
     shortSide,
+    longSideRough,
+    shortSideRough,
+    roughCutAllowance: ROUGH_CUT_ALLOWANCE,
     outerWidth,
     outerHeight,
-    totalLumber: 2 * longSide + 2 * shortSide,
+    totalLumber: 2 * longSideRough + 2 * shortSideRough,
     miterAngle: 45,
   };
 }
