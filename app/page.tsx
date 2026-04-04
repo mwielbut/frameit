@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import ControlsPanel from "../components/ControlsPanel";
 import FrameDiagram from "../components/FrameDiagram";
 import PrintSheet from "../components/PrintSheet";
-import { FrameInputs, calculateFrame } from "../lib/calculations";
+import { FrameInputs, frameGeometry } from "../lib/calculations";
 
 export default function Home() {
   const [inputs, setInputs] = useState<FrameInputs>({
@@ -16,7 +16,7 @@ export default function Home() {
     rabbetDepth: 0.375,
   });
 
-  const results = useMemo(() => calculateFrame(inputs), [inputs]);
+  const geo = useMemo(() => frameGeometry(inputs), [inputs]);
 
   const handleInputChange = (key: keyof FrameInputs, value: number) => {
     setInputs((prev) => ({ ...prev, [key]: value }));
@@ -25,10 +25,10 @@ export default function Home() {
   return (
     <>
       <div className="flex h-screen w-full overflow-hidden print:hidden">
-        <ControlsPanel inputs={inputs} results={results} onInputChange={handleInputChange} />
-        <FrameDiagram inputs={inputs} results={results} />
+        <ControlsPanel geo={geo} onInputChange={handleInputChange} />
+        <FrameDiagram geo={geo} />
       </div>
-      <PrintSheet inputs={inputs} results={results} />
+      <PrintSheet geo={geo} />
     </>
   );
 }

@@ -2,11 +2,10 @@
 
 import { Ruler, ImageIcon, Square, Maximize2, Frame, Layers, Scissors, Printer } from "lucide-react";
 import Slider from "./Slider";
-import { FrameInputs, FrameResults, formatFraction } from "../lib/calculations";
+import { FrameInputs, FrameGeometry, formatFraction, formatPair } from "../lib/calculations";
 
 interface ControlsPanelProps {
-  inputs: FrameInputs;
-  results: FrameResults;
+  geo: FrameGeometry;
   onInputChange: (key: keyof FrameInputs, value: number) => void;
 }
 
@@ -25,7 +24,7 @@ function Divider() {
   return <div className="h-px w-full bg-[#D4D0C8]" />;
 }
 
-export default function ControlsPanel({ inputs, results, onInputChange }: ControlsPanelProps) {
+export default function ControlsPanel({ geo, onInputChange }: ControlsPanelProps) {
   return (
     <div className="w-[380px] min-w-[380px] h-full bg-white border-r border-[#D4D0C8] overflow-y-auto flex flex-col gap-6 px-7 py-8">
       {/* Header */}
@@ -52,7 +51,7 @@ export default function ControlsPanel({ inputs, results, onInputChange }: Contro
             <div className="flex items-center justify-between h-10 rounded bg-[#F8F6F1] border border-[#D4D0C8] px-3">
               <input
                 type="number"
-                value={inputs.artWidth}
+                value={geo.artWidth}
                 onChange={(e) => onInputChange("artWidth", parseFloat(e.target.value) || 0)}
                 className="w-full bg-transparent text-[14px] font-mono font-medium text-[#2C2C2C] outline-none"
               />
@@ -65,7 +64,7 @@ export default function ControlsPanel({ inputs, results, onInputChange }: Contro
             <div className="flex items-center justify-between h-10 rounded bg-[#F8F6F1] border border-[#D4D0C8] px-3">
               <input
                 type="number"
-                value={inputs.artHeight}
+                value={geo.artHeight}
                 onChange={(e) => onInputChange("artHeight", parseFloat(e.target.value) || 0)}
                 className="w-full bg-transparent text-[14px] font-mono font-medium text-[#2C2C2C] outline-none"
               />
@@ -83,11 +82,11 @@ export default function ControlsPanel({ inputs, results, onInputChange }: Contro
           <SectionLabel icon={Square} label="MAT WIDTH" />
           <div className="flex items-center h-7 rounded bg-[#F8F6F1] border border-[#D4D0C8] px-2.5">
             <span className="font-mono text-[12px] font-medium text-[#2C2C2C]">
-              {formatFraction(inputs.matWidth)} in
+              {formatFraction(geo.matWidth)} in
             </span>
           </div>
         </div>
-        <Slider value={inputs.matWidth} min={0} max={4} step={0.25} onChange={(v) => onInputChange("matWidth", v)} />
+        <Slider value={geo.matWidth} min={0} max={4} step={0.25} onChange={(v) => onInputChange("matWidth", v)} />
         <p className="text-[11px] text-[#9A968E]">Visible border from opening. Range: 0-4 inches</p>
       </div>
 
@@ -99,11 +98,11 @@ export default function ControlsPanel({ inputs, results, onInputChange }: Contro
           <SectionLabel icon={Maximize2} label="MAT OVERLAP" />
           <div className="flex items-center h-7 rounded bg-[#F8F6F1] border border-[#D4D0C8] px-2.5">
             <span className="font-mono text-[12px] font-medium text-[#2C2C2C]">
-              {formatFraction(inputs.matOverlap)} in
+              {formatFraction(geo.matOverlap)} in
             </span>
           </div>
         </div>
-        <Slider value={inputs.matOverlap} min={0.125} max={0.5} step={0.125} onChange={(v) => onInputChange("matOverlap", v)} />
+        <Slider value={geo.matOverlap} min={0.125} max={0.5} step={0.125} onChange={(v) => onInputChange("matOverlap", v)} />
         <p className="text-[11px] text-[#9A968E]">How much mat covers artwork edge. Range: 1/8-1/2 in</p>
       </div>
 
@@ -113,11 +112,11 @@ export default function ControlsPanel({ inputs, results, onInputChange }: Contro
           <SectionLabel icon={Frame} label="FRAME WIDTH" />
           <div className="flex items-center h-7 rounded bg-[#F8F6F1] border border-[#D4D0C8] px-2.5">
             <span className="font-mono text-[12px] font-medium text-[#2C2C2C]">
-              {formatFraction(inputs.frameWidth)} in
+              {formatFraction(geo.frameWidth)} in
             </span>
           </div>
         </div>
-        <Slider value={inputs.frameWidth} min={0.5} max={3} step={0.25} onChange={(v) => onInputChange("frameWidth", v)} />
+        <Slider value={geo.frameWidth} min={0.5} max={3} step={0.25} onChange={(v) => onInputChange("frameWidth", v)} />
         <p className="text-[11px] text-[#9A968E]">Visible frame border. Range: 0.5-3 inches</p>
       </div>
 
@@ -129,11 +128,11 @@ export default function ControlsPanel({ inputs, results, onInputChange }: Contro
           <SectionLabel icon={Layers} label="RABBET DEPTH" />
           <div className="flex items-center h-7 rounded bg-[#F8F6F1] border border-[#D4D0C8] px-2.5">
             <span className="font-mono text-[12px] font-medium text-[#2C2C2C]">
-              {formatFraction(inputs.rabbetDepth)} in
+              {formatFraction(geo.rabbetDepth)} in
             </span>
           </div>
         </div>
-        <Slider value={inputs.rabbetDepth} min={0.125} max={0.75} step={0.125} onChange={(v) => onInputChange("rabbetDepth", v)} />
+        <Slider value={geo.rabbetDepth} min={0.125} max={0.75} step={0.125} onChange={(v) => onInputChange("rabbetDepth", v)} />
         <p className="text-[11px] text-[#9A968E]">Groove depth in frame. Range: 1/8–3/4 inches</p>
       </div>
 
@@ -145,27 +144,27 @@ export default function ControlsPanel({ inputs, results, onInputChange }: Contro
         <div className="rounded bg-[#F8F6F1] border border-[#D4D0C8] p-4 flex flex-col gap-3">
           <CutGroup
             label="Long sides (&times;2)"
-            rough={`${formatFraction(results.longSideRough)}"`}
-            exact={`${formatFraction(results.longSide)}"`}
+            rough={`${formatFraction(geo.longSideRough)}"`}
+            exact={`${formatFraction(geo.longSide)}"`}
           />
           <div className="h-px bg-[#D4D0C8]" />
           <CutGroup
             label="Short sides (&times;2)"
-            rough={`${formatFraction(results.shortSideRough)}"`}
-            exact={`${formatFraction(results.shortSide)}"`}
+            rough={`${formatFraction(geo.shortSideRough)}"`}
+            exact={`${formatFraction(geo.shortSide)}"`}
           />
           <div className="h-px bg-[#D4D0C8]" />
-          <CutRow label="Miter angle" value={`${results.miterAngle}\u00B0`} />
+          <CutRow label="Miter angle" value={`${geo.miterAngle}\u00B0`} />
           <div className="h-px bg-[#D4D0C8]" />
-          <CutRow label="Outer dimensions" value={`${formatFraction(results.outerWidth)}" \u00D7 ${formatFraction(results.outerHeight)}"`} />
+          <CutRow label="Outer dimensions" value={formatPair(geo.outerWidth, geo.outerHeight)} />
           <div className="pt-1 flex items-center justify-between">
             <span className="text-[13px] font-semibold text-[#2C2C2C]">Total lumber needed</span>
             <span className="font-mono text-[14px] font-bold text-[#4A6FA5]">
-              {formatFraction(results.totalLumber)}&quot;
+              {formatFraction(geo.totalLumber)}&quot;
             </span>
           </div>
           <p className="text-[10px] text-[#9A968E] leading-[1.4]">
-            Rough cut includes {formatFraction(results.roughCutAllowance)}&quot; extra for waste; trim to exact length with 45&deg; miters.
+            Rough cut includes {formatFraction(geo.roughCutAllowance)}&quot; extra for waste; trim to exact length with 45&deg; miters.
           </p>
         </div>
       </div>

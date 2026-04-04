@@ -1,15 +1,27 @@
 "use client";
 
-import { FrameInputs, FrameResults, formatFraction } from "../lib/calculations";
+import { FrameGeometry, formatFraction, formatPair } from "../lib/calculations";
 
 interface FrameDiagramProps {
-  inputs: FrameInputs;
-  results: FrameResults;
+  geo: FrameGeometry;
 }
 
-export default function FrameDiagram({ inputs, results }: FrameDiagramProps) {
-  const { artWidth, artHeight, matWidth, matOverlap, frameWidth, rabbetDepth } = inputs;
-  const { outerWidth, outerHeight } = results;
+export default function FrameDiagram({ geo }: FrameDiagramProps) {
+  const {
+    artWidth,
+    artHeight,
+    matWidth,
+    matOverlap,
+    frameWidth,
+    outerWidth,
+    outerHeight,
+    matOpeningWidth,
+    matOpeningHeight,
+    matBoardWidth,
+    matBoardHeight,
+    glassWidth,
+    glassHeight,
+  } = geo;
 
   // SVG viewBox dimensions
   const vw = 1060;
@@ -212,22 +224,15 @@ export default function FrameDiagram({ inputs, results }: FrameDiagramProps) {
 
         {/* Mat Overview Box */}
         {(() => {
-          // Mat visible outer = opening + 2*matWidth. The board also extends
-          // into the frame rabbet on each side, adding 2 * rabbetDepth.
-          const matOpenW = artWidth - 2 * matOverlap;
-          const matOpenH = artHeight - 2 * matOverlap;
-          const matOuterW = matOpenW + 2 * matWidth + 2 * rabbetDepth;
-          const matOuterH = matOpenH + 2 * matWidth + 2 * rabbetDepth;
-
           // Mini mat drawing, scaled to fit within the box
           const drawMax = 110;
-          const miniScale = Math.min(drawMax / matOuterW, drawMax / matOuterH);
-          const miniW = matOuterW * miniScale;
-          const miniH = matOuterH * miniScale;
+          const miniScale = Math.min(drawMax / matBoardWidth, drawMax / matBoardHeight);
+          const miniW = matBoardWidth * miniScale;
+          const miniH = matBoardHeight * miniScale;
           const miniX = cdX + cdW / 2 - miniW / 2;
           const miniY = cdY + 48;
-          const openW = matOpenW * miniScale;
-          const openH = matOpenH * miniScale;
+          const openW = matOpeningWidth * miniScale;
+          const openH = matOpeningHeight * miniScale;
           const openX = miniX + (miniW - openW) / 2;
           const openY = miniY + (miniH - openH) / 2;
 
@@ -250,7 +255,7 @@ export default function FrameDiagram({ inputs, results }: FrameDiagramProps) {
                 OUTER
               </text>
               <text x={cdX + cdW - 12} y={cdY + cdH - 50} textAnchor="end" className="font-mono" fontSize={10} fontWeight={600} fill="#2C2C2C">
-                {formatFraction(matOuterW)}&quot; &times; {formatFraction(matOuterH)}&quot;
+                {formatPair(matBoardWidth, matBoardHeight)}
               </text>
 
               <line x1={cdX + 12} y1={cdY + cdH - 40} x2={cdX + cdW - 12} y2={cdY + cdH - 40} stroke="#E0DDD5" />
@@ -259,7 +264,7 @@ export default function FrameDiagram({ inputs, results }: FrameDiagramProps) {
                 OPENING
               </text>
               <text x={cdX + cdW - 12} y={cdY + cdH - 22} textAnchor="end" className="font-mono" fontSize={10} fontWeight={600} fill="#2C2C2C">
-                {formatFraction(matOpenW)}&quot; &times; {formatFraction(matOpenH)}&quot;
+                {formatPair(matOpeningWidth, matOpeningHeight)}
               </text>
               <text x={cdX + 12} y={cdY + cdH - 10} className="font-mono" fontSize={8} fill="#9A968E">
                 Artwork &minus; {formatFraction(matOverlap)}&quot; overlap per side
@@ -270,16 +275,11 @@ export default function FrameDiagram({ inputs, results }: FrameDiagramProps) {
 
         {/* Glass Overview Box */}
         {(() => {
-          // Glass sits in the same rabbet opening as the mat, so it matches
-          // the mat board outer dimensions.
-          const glassW = artWidth - 2 * matOverlap + 2 * matWidth + 2 * rabbetDepth;
-          const glassH = artHeight - 2 * matOverlap + 2 * matWidth + 2 * rabbetDepth;
-
           // Mini glass drawing
           const drawMax = 70;
-          const miniScale = Math.min(drawMax / glassW, drawMax / glassH);
-          const miniW = glassW * miniScale;
-          const miniH = glassH * miniScale;
+          const miniScale = Math.min(drawMax / glassWidth, drawMax / glassHeight);
+          const miniW = glassWidth * miniScale;
+          const miniH = glassHeight * miniScale;
           const miniX = gX + gW / 2 - miniW / 2;
           const miniY = gY + 44;
 
@@ -303,7 +303,7 @@ export default function FrameDiagram({ inputs, results }: FrameDiagramProps) {
                 SIZE
               </text>
               <text x={gX + gW - 12} y={gY + gH - 22} textAnchor="end" className="font-mono" fontSize={10} fontWeight={600} fill="#2C2C2C">
-                {formatFraction(glassW)}&quot; &times; {formatFraction(glassH)}&quot;
+                {formatPair(glassWidth, glassHeight)}
               </text>
               <text x={gX + 12} y={gY + gH - 10} className="font-mono" fontSize={8} fill="#9A968E">
                 Fits in frame rabbet (same as mat board)
