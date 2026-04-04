@@ -19,9 +19,10 @@ export interface FrameResults {
 export function calculateFrame(inputs: FrameInputs): FrameResults {
   const { artWidth, artHeight, matWidth, matOverlap, frameWidth } = inputs;
 
-  // Mat overlap only affects mat opening, not outer frame dimensions
-  const outerWidth = artWidth + 2 * matWidth + 2 * frameWidth;
-  const outerHeight = artHeight + 2 * matWidth + 2 * frameWidth;
+  // matWidth is the visible mat border from the opening edge to the mat edge.
+  // Mat opening = artwork - 2*overlap, mat visible outer = opening + 2*matWidth.
+  const outerWidth = artWidth - 2 * matOverlap + 2 * matWidth + 2 * frameWidth;
+  const outerHeight = artHeight - 2 * matOverlap + 2 * matWidth + 2 * frameWidth;
 
   const longSide = Math.max(outerWidth, outerHeight);
   const shortSide = Math.min(outerWidth, outerHeight);

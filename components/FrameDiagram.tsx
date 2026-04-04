@@ -37,11 +37,14 @@ export default function FrameDiagram({ inputs, results }: FrameDiagramProps) {
   const matW = frameW - 2 * innerFrameInset;
   const matH = frameH - 2 * innerFrameInset;
 
-  // Artwork sits centered within the mat
+  // Artwork sits centered within the mat. The visible mat border (matWidth)
+  // is measured from the mat opening; the artwork extends matOverlap past the
+  // opening on each side, so the gap from mat edge to artwork is matWidth - matOverlap.
   const artDisplayW = artWidth * scale;
   const artDisplayH = artHeight * scale;
-  const artX = matX + matWidth * scale;
-  const artY = matY + matWidth * scale;
+  const artInset = Math.max(0, matWidth - matOverlap) * scale;
+  const artX = matX + artInset;
+  const artY = matY + artInset;
 
   // Dimension line positions
   const dimGap = 30;
@@ -105,7 +108,7 @@ export default function FrameDiagram({ inputs, results }: FrameDiagramProps) {
         <line x1={fx} y1={fy - dimGap - tickLen / 2} x2={fx} y2={fy - dimGap + tickLen / 2} stroke="#C25B56" />
         <line x1={fx + frameW} y1={fy - dimGap - tickLen / 2} x2={fx + frameW} y2={fy - dimGap + tickLen / 2} stroke="#C25B56" />
         <text x={cx} y={fy - dimGap - 8} textAnchor="middle" className="font-mono" fontSize={10} fontWeight={500} fill="#C25B56">
-          {outerWidth.toFixed(0)}&quot;
+          {formatFraction(outerWidth)}&quot;
         </text>
 
         {/* Vertical left */}
@@ -113,7 +116,7 @@ export default function FrameDiagram({ inputs, results }: FrameDiagramProps) {
         <line x1={fx - dimGap - tickLen / 2} y1={fy} x2={fx - dimGap + tickLen / 2} y2={fy} stroke="#C25B56" />
         <line x1={fx - dimGap - tickLen / 2} y1={fy + frameH} x2={fx - dimGap + tickLen / 2} y2={fy + frameH} stroke="#C25B56" />
         <text x={fx - dimGap - 12} y={cy + 4} textAnchor="middle" className="font-mono" fontSize={12} fontWeight={500} fill="#C25B56" transform={`rotate(-90, ${fx - dimGap - 12}, ${cy + 4})`}>
-          {outerHeight.toFixed(0)}&quot;
+          {formatFraction(outerHeight)}&quot;
         </text>
 
         {/* Horizontal bottom - outer width */}
@@ -121,7 +124,7 @@ export default function FrameDiagram({ inputs, results }: FrameDiagramProps) {
         <line x1={fx} y1={fy + frameH + dimGap - tickLen / 2} x2={fx} y2={fy + frameH + dimGap + tickLen / 2} stroke="#C25B56" />
         <line x1={fx + frameW} y1={fy + frameH + dimGap - tickLen / 2} x2={fx + frameW} y2={fy + frameH + dimGap + tickLen / 2} stroke="#C25B56" />
         <text x={cx} y={fy + frameH + dimGap + 18} textAnchor="middle" className="font-mono" fontSize={12} fontWeight={500} fill="#C25B56">
-          {outerWidth.toFixed(0)}&quot;
+          {formatFraction(outerWidth)}&quot;
         </text>
 
         {/* Artwork dimension lines */}
@@ -141,20 +144,23 @@ export default function FrameDiagram({ inputs, results }: FrameDiagramProps) {
           {artHeight}&quot;
         </text>
 
-        {/* Mat width annotation (right side) */}
-        {matWidth > 0 && (
-          <>
-            <line x1={artX + artDisplayW + 55} y1={artY} x2={artX + artDisplayW + 55} y2={matY} stroke="#C25B56" opacity={0.6} />
-            <line x1={artX + artDisplayW + 49} y1={artY} x2={artX + artDisplayW + 61} y2={artY} stroke="#C25B56" opacity={0.6} />
-            <line x1={artX + artDisplayW + 49} y1={matY} x2={artX + artDisplayW + 61} y2={matY} stroke="#C25B56" opacity={0.6} />
-            <text x={artX + artDisplayW + 70} y={(artY + matY) / 2 + 0} className="font-mono" fontSize={9} fill="#C25B56">
-              {formatFraction(matWidth)}&quot;
-            </text>
-            <text x={artX + artDisplayW + 70} y={(artY + matY) / 2 + 12} className="font-mono" fontSize={8} letterSpacing={2} fill="#9A968E">
-              MAT
-            </text>
-          </>
-        )}
+        {/* Mat width annotation (right side): from opening edge to mat edge */}
+        {matWidth > 0 && (() => {
+          const openingTop = artY + matOverlap * scale;
+          return (
+            <>
+              <line x1={artX + artDisplayW + 55} y1={openingTop} x2={artX + artDisplayW + 55} y2={matY} stroke="#C25B56" opacity={0.6} />
+              <line x1={artX + artDisplayW + 49} y1={openingTop} x2={artX + artDisplayW + 61} y2={openingTop} stroke="#C25B56" opacity={0.6} />
+              <line x1={artX + artDisplayW + 49} y1={matY} x2={artX + artDisplayW + 61} y2={matY} stroke="#C25B56" opacity={0.6} />
+              <text x={artX + artDisplayW + 70} y={(openingTop + matY) / 2 + 0} className="font-mono" fontSize={9} fill="#C25B56">
+                {formatFraction(matWidth)}&quot;
+              </text>
+              <text x={artX + artDisplayW + 70} y={(openingTop + matY) / 2 + 12} className="font-mono" fontSize={8} letterSpacing={2} fill="#9A968E">
+                MAT
+              </text>
+            </>
+          );
+        })()}
 
         {/* Frame width annotation */}
         <line x1={artX + artDisplayW + 55} y1={matY} x2={artX + artDisplayW + 55} y2={fy} stroke="#C25B56" opacity={0.6} />
@@ -166,44 +172,72 @@ export default function FrameDiagram({ inputs, results }: FrameDiagramProps) {
           FRAME
         </text>
 
-        {/* Corner Detail Box */}
-        <rect x={cdX} y={cdY} width={cdW} height={cdH} rx={2} fill="#FFFFFF" stroke="#D4D0C8" />
-        <text x={cdX + 12} y={cdY + 16} className="font-mono" fontSize={10} fontWeight={500} letterSpacing={2} fill="#2C2C2C">
-          CORNER DETAIL
-        </text>
-        <text x={cdX + 12} y={cdY + 30} className="font-mono" fontSize={9} fill="#9A968E">
-          Cross-section at 45&deg; miter
-        </text>
+        {/* Mat Overview Box */}
+        {(() => {
+          // Mat visible outer = opening + 2*matWidth. The board also extends
+          // into the frame rabbet on each side, adding 2 * rabbetDepth.
+          const matOpenW = artWidth - 2 * matOverlap;
+          const matOpenH = artHeight - 2 * matOverlap;
+          const matOuterW = matOpenW + 2 * matWidth + 2 * rabbetDepth;
+          const matOuterH = matOpenH + 2 * matWidth + 2 * rabbetDepth;
 
-        {/* Corner detail mini drawing */}
-        <rect x={cdX + 30} y={cdY + 55} width={80} height={120} rx={1} fill="#8B7355" />
-        <rect x={cdX + 38} y={cdY + 63} width={64} height={104} fill="#A89070" />
-        <rect x={cdX + 50} y={cdY + 70} width={160} height={95} fill="#F0EDE5" stroke="#D8D4CB" />
-        <rect x={cdX + 70} y={cdY + 85} width={140} height={65} fill="#E8E4DB" stroke="#D4D0C8" />
+          // Mini mat drawing, scaled to fit within the box
+          const drawMax = 110;
+          const miniScale = Math.min(drawMax / matOuterW, drawMax / matOuterH);
+          const miniW = matOuterW * miniScale;
+          const miniH = matOuterH * miniScale;
+          const miniX = cdX + cdW / 2 - miniW / 2;
+          const miniY = cdY + 48;
+          const openW = matOpenW * miniScale;
+          const openH = matOpenH * miniScale;
+          const openX = miniX + (miniW - openW) / 2;
+          const openY = miniY + (miniH - openH) / 2;
 
-        {/* Overlap highlight in corner detail */}
-        <rect x={cdX + 68} y={cdY + 70} width={12} height={95} fill="#D4933A" opacity={0.3} />
+          return (
+            <>
+              <rect x={cdX} y={cdY} width={cdW} height={cdH} rx={2} fill="#FFFFFF" stroke="#D4D0C8" />
+              <text x={cdX + 12} y={cdY + 16} className="font-mono" fontSize={10} fontWeight={500} letterSpacing={2} fill="#2C2C2C">
+                MAT OVERVIEW
+              </text>
+              <text x={cdX + 12} y={cdY + 30} className="font-mono" fontSize={9} fill="#9A968E">
+                Dimensions for ordering mat board
+              </text>
 
-        {/* Corner detail annotations */}
-        <line x1={cdX + 30} y1={cdY + 175} x2={cdX + 110} y2={cdY + 175} stroke="#C25B56" />
-        <text x={cdX + 35} y={cdY + 189} className="font-mono" fontSize={8} fill="#C25B56">
-          Rabbet: {formatFraction(rabbetDepth)}&quot; deep
-        </text>
-        <text x={cdX + 35} y={cdY + 201} className="font-mono" fontSize={8} fill="#9A968E">
-          45&deg; miter joint
-        </text>
-        <text x={cdX + 35} y={cdY + 213} className="font-mono" fontSize={9} fontWeight={500} fill="#D4933A">
-          Mat overlap: {formatFraction(matOverlap)}&quot;
-        </text>
+              {/* Mini mat drawing */}
+              <rect x={miniX} y={miniY} width={miniW} height={miniH} fill="#F0EDE5" stroke="#D8D4CB" />
+              <rect x={openX} y={openY} width={openW} height={openH} fill="#F8F6F1" stroke="#D4933A" strokeDasharray="3 2" />
+
+              {/* Labels */}
+              <text x={cdX + 12} y={cdY + cdH - 50} className="font-mono" fontSize={9} fontWeight={500} fill="#6B6860">
+                OUTER
+              </text>
+              <text x={cdX + cdW - 12} y={cdY + cdH - 50} textAnchor="end" className="font-mono" fontSize={10} fontWeight={600} fill="#2C2C2C">
+                {formatFraction(matOuterW)}&quot; &times; {formatFraction(matOuterH)}&quot;
+              </text>
+
+              <line x1={cdX + 12} y1={cdY + cdH - 40} x2={cdX + cdW - 12} y2={cdY + cdH - 40} stroke="#E0DDD5" />
+
+              <text x={cdX + 12} y={cdY + cdH - 22} className="font-mono" fontSize={9} fontWeight={500} fill="#D4933A">
+                OPENING
+              </text>
+              <text x={cdX + cdW - 12} y={cdY + cdH - 22} textAnchor="end" className="font-mono" fontSize={10} fontWeight={600} fill="#2C2C2C">
+                {formatFraction(matOpenW)}&quot; &times; {formatFraction(matOpenH)}&quot;
+              </text>
+              <text x={cdX + 12} y={cdY + cdH - 10} className="font-mono" fontSize={8} fill="#9A968E">
+                Artwork &minus; {formatFraction(matOverlap)}&quot; overlap per side
+              </text>
+            </>
+          );
+        })()}
 
         {/* Bottom summary line */}
         <line x1={40} y1={vh - 120} x2={vw - 40} y2={vh - 120} stroke="#B8B4AC" />
 
         <text x={cx} y={vh - 90} textAnchor="middle" className="font-mono" fontSize={13} fontWeight={600} letterSpacing={2} fill="#2C2C2C">
-          TOTAL OUTER: {outerWidth.toFixed(0)}&quot; &times; {outerHeight.toFixed(0)}&quot;
+          TOTAL OUTER: {formatFraction(outerWidth)}&quot; &times; {formatFraction(outerHeight)}&quot;
         </text>
         <text x={cx} y={vh - 70} textAnchor="middle" className="font-mono" fontSize={9} letterSpacing={1} fill="#6B6860">
-          Mat opening: {artWidth}&quot; &times; {artHeight}&quot; | Mat width: {formatFraction(matWidth)}&quot; | Frame: {formatFraction(frameWidth)}&quot;
+          Mat opening: {formatFraction(artWidth - 2 * matOverlap)}&quot; &times; {formatFraction(artHeight - 2 * matOverlap)}&quot; | Mat width: {formatFraction(matWidth)}&quot; | Frame: {formatFraction(frameWidth)}&quot;
         </text>
 
         {/* FIG label */}

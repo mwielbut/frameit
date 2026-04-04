@@ -88,7 +88,7 @@ export default function ControlsPanel({ inputs, results, onInputChange }: Contro
           </div>
         </div>
         <Slider value={inputs.matWidth} min={0} max={4} step={0.25} onChange={(v) => onInputChange("matWidth", v)} />
-        <p className="text-[11px] text-[#9A968E]">Equal on all sides. Range: 0-4 inches</p>
+        <p className="text-[11px] text-[#9A968E]">Visible border from opening. Range: 0-4 inches</p>
       </div>
 
       <Divider />
@@ -143,17 +143,17 @@ export default function ControlsPanel({ inputs, results, onInputChange }: Contro
       <div className="flex flex-col gap-3.5">
         <SectionLabel icon={Scissors} label="CUT LIST" color="#C25B56" />
         <div className="rounded bg-[#F8F6F1] border border-[#D4D0C8] p-4 flex flex-col gap-3">
-          <CutRow label="Long sides (&times;2)" value={`${results.longSide.toFixed(2)}"`} />
+          <CutRow label="Long sides (&times;2)" value={`${formatFraction(results.longSide)}"`} />
           <div className="h-px bg-[#D4D0C8]" />
-          <CutRow label="Short sides (&times;2)" value={`${results.shortSide.toFixed(2)}"`} />
+          <CutRow label="Short sides (&times;2)" value={`${formatFraction(results.shortSide)}"`} />
           <div className="h-px bg-[#D4D0C8]" />
           <CutRow label="Miter angle" value={`${results.miterAngle}\u00B0`} />
           <div className="h-px bg-[#D4D0C8]" />
-          <CutRow label="Outer dimensions" value={`${results.outerWidth.toFixed(0)}" \u00D7 ${results.outerHeight.toFixed(0)}"`} />
+          <CutRow label="Outer dimensions" value={`${formatFraction(results.outerWidth)}" \u00D7 ${formatFraction(results.outerHeight)}"`} />
           <div className="pt-1 flex items-center justify-between">
             <span className="text-[13px] font-semibold text-[#2C2C2C]">Total lumber needed</span>
             <span className="font-mono text-[14px] font-bold text-[#4A6FA5]">
-              {results.totalLumber.toFixed(2)}&quot;
+              {formatFraction(results.totalLumber)}&quot;
             </span>
           </div>
         </div>
