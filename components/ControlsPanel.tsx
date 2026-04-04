@@ -1,12 +1,12 @@
 "use client";
 
-import { Ruler, ImageIcon, Square, Maximize2, Frame, Layers, Scissors, Printer } from "lucide-react";
+import { Ruler, ImageIcon, Square, Maximize2, Frame, Layers, Scissors, Printer, Tag } from "lucide-react";
 import Slider from "./Slider";
 import { FrameInputs, FrameGeometry, formatFraction, formatPair } from "../lib/calculations";
 
 interface ControlsPanelProps {
   geo: FrameGeometry;
-  onInputChange: (key: keyof FrameInputs, value: number) => void;
+  onInputChange: <K extends keyof FrameInputs>(key: K, value: FrameInputs[K]) => void;
 }
 
 function SectionLabel({ icon: Icon, label, color = "#4A6FA5" }: { icon: React.ElementType; label: string; color?: string }) {
@@ -38,6 +38,24 @@ export default function ControlsPanel({ geo, onInputChange }: ControlsPanelProps
         <p className="text-[13px] text-[#6B6860] leading-[1.4]">
           Calculate wood cut and mat cut dimensions for custom picture frames
         </p>
+      </div>
+
+      <Divider />
+
+      {/* Project Name */}
+      <div className="flex flex-col gap-3">
+        <SectionLabel icon={Tag} label="PROJECT NAME" />
+        <div className="flex items-center h-10 rounded bg-[#F8F6F1] border border-[#D4D0C8] px-3">
+          <input
+            type="text"
+            value={geo.name}
+            onChange={(e) => onInputChange("name", e.target.value)}
+            placeholder="e.g. Living room landscape"
+            maxLength={60}
+            className="w-full bg-transparent text-[14px] font-medium text-[#2C2C2C] outline-none placeholder:text-[#9A968E] placeholder:font-normal"
+          />
+        </div>
+        <p className="text-[11px] text-[#9A968E]">Optional label to distinguish this frame from others.</p>
       </div>
 
       <Divider />
