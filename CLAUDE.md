@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-FrameIt is a Picture Frame Calculator — a single-page Next.js app where users input artwork dimensions and frame parameters, and get computed wood cut dimensions with an interactive SVG diagram of the frame assembly.
+FrameIt is a Picture Frame Calculator — a single-page Next.js app where users pin one dimension (artwork, frame outer, or mat board) and get computed wood cut dimensions, mat/glass orders, and an interactive SVG diagram of the frame assembly for the rest.
 
 ## Commands
 
@@ -21,10 +21,10 @@ No test framework or linter is currently configured.
 
 The app is a single client-side page with three layers:
 
-- **`app/page.tsx`** — State owner. Holds `FrameInputs` in React state, memoizes a single `FrameGeometry` via `frameGeometry()`, passes it as one `geo` prop to each child.
-- **`components/ControlsPanel.tsx`** — Left panel (380px). Artwork size inputs, sliders for mat/frame parameters, and the computed cut list card. Reads `geo` for both input values (echoed) and derived dimensions. Uses `components/Slider.tsx` for styled range inputs.
-- **`components/FrameDiagram.tsx`** — Right panel. SVG visualization with proportionally-scaled nested rectangles (frame → mat → artwork), dimension annotation lines, and Mat/Glass Overview inset panels. All dimensions read from `geo` — no inline arithmetic.
-- **`lib/calculations.ts`** — Pure functions. `frameGeometry(inputs)` is the single source of truth for every derived dimension: mat opening, mat board (with rabbet), glass panel, frame outer, and the cut list. `formatFraction()` converts decimals to display fractions (e.g., 0.25 → "1/4"); `formatPair(w, h)` formats a width × height pair. Key invariants: mat opening = artwork − 2×overlap; mat board = opening + 2×mat + 2×rabbet; frame outer = opening + 2×mat + 2×frame (rabbet excluded — the board tucks behind the frame lip).
+- **`app/page.tsx`** — State owner. Holds `FrameInputs` in React state, memoizes a single `FrameGeometry` via `frameGeometry()`, passes it as one `geo` prop to each child. Hydrates from `localStorage` under `frameit:inputs:v2` with a one-shot migration from the pre-modes `v1` shape.
+- **`components/ControlsPanel.tsx`** — Left panel (380px). Mode segmented control (Artwork / Frame / Mat), dimension inputs whose meaning depends on `geo.mode`, sliders for mat/frame parameters, and the computed cut list card. Reads `geo` for both input values (echoed via `geo.inputWidth`/`inputHeight`) and derived dimensions. Uses `components/Slider.tsx` for styled range inputs.
+- **`components/FrameDiagram.tsx`** — Right panel. SVG visualization with proportionally-scaled nested rectangles (frame → mat → artwork), dimension annotation lines, and Mat/Glass Overview inset panels. All dimensions read from `geo` — no inline arithmetic, mode-agnostic.
+- **`lib/calculations.ts`** — Pure functions and the single source of truth for geometry. `FrameInputs` carries a `mode: "artwork" | "frameOuter" | "matBoard"` discriminator plus one `inputWidth`/`inputHeight` pair whose interpretation depends on mode. `frameGeometry(inputs)` derives canonical artwork dimensions by inverting when mode ≠ artwork, clamps non-positive results to a tiny minimum, and sets `geo.artInvalid` so the UI can warn. Downstream formulas are invariant: mat opening = artwork − 2×overlap; mat board = opening + 2×mat + 2×rabbet; frame outer = opening + 2×mat + 2×frame (rabbet excluded — the board tucks behind the frame lip). `switchMode(prev, next)` is a pure helper that re-seeds `inputWidth`/`inputHeight` from current geometry so toggling modes leaves the diagram pinned. `formatFraction()` / `formatPair()` handle display.
 
 ## Deployment
 

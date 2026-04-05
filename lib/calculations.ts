@@ -1,7 +1,17 @@
+/**
+ * Which dimension the user is holding fixed. The two input fields
+ * (`inputWidth` / `inputHeight`) are interpreted through this discriminator:
+ *   - "artwork":    the user knows the artwork size and everything else flows
+ *   - "frameOuter": the user already has a frame and wants to fit art into it
+ *   - "matBoard":   the user already has a mat board and wants to build a frame
+ */
+export type InputMode = "artwork" | "frameOuter" | "matBoard";
+
 export interface FrameInputs {
   name: string;
-  artWidth: number;
-  artHeight: number;
+  mode: InputMode;
+  inputWidth: number;
+  inputHeight: number;
   matWidth: number;
   matOverlap: number;
   frameWidth: number;
@@ -23,12 +33,24 @@ export interface FrameInputs {
 export interface FrameGeometry {
   // echoed inputs so callers take one prop instead of two
   name: string;
+  mode: InputMode;
+  // The raw input pair the user is editing, echoed verbatim (not clamped) so
+  // input fields can display exactly what was typed even when the inversion
+  // produced a non-positive artwork and had to be clamped.
+  inputWidth: number;
+  inputHeight: number;
   artWidth: number;
   artHeight: number;
   matWidth: number;
   matOverlap: number;
   frameWidth: number;
   rabbetDepth: number;
+
+  // True when the chosen input dimensions (in frameOuter or matBoard mode)
+  // are too small for the current mat/frame settings to leave any artwork.
+  // The UI shows a warning; geometry is clamped to a tiny positive artwork
+  // so the diagram doesn't render with negative values.
+  artInvalid: boolean;
 
   // mat
   matOpeningWidth: number;
@@ -58,8 +80,52 @@ export interface FrameGeometry {
 // for waste and blade kerf during the two miter cuts.
 export const ROUGH_CUT_ALLOWANCE = 0.5;
 
+// Smallest artwork dimension we'll allow before clamping. Keeps the SVG
+// from rendering negative rectangles while still signaling to the user (via
+// `artInvalid`) that their inputs don't leave room for any real artwork.
+const MIN_ART_DIMENSION = 0.01;
+
 export function frameGeometry(inputs: FrameInputs): FrameGeometry {
-  const { name, artWidth, artHeight, matWidth, matOverlap, frameWidth, rabbetDepth } = inputs;
+  const {
+    name,
+    mode,
+    inputWidth,
+    inputHeight,
+    matWidth,
+    matOverlap,
+    frameWidth,
+    rabbetDepth,
+  } = inputs;
+
+  // Derive the canonical artwork dimensions from whichever dimension the
+  // user is holding fixed. Everything downstream stays artwork-centric.
+  let rawArtWidth: number;
+  let rawArtHeight: number;
+  switch (mode) {
+    case "artwork":
+      rawArtWidth = inputWidth;
+      rawArtHeight = inputHeight;
+      break;
+    case "frameOuter": {
+      // Invert outer = (art − 2·overlap) + 2·matWidth + 2·frameWidth
+      const delta = 2 * (matWidth + frameWidth - matOverlap);
+      rawArtWidth = inputWidth - delta;
+      rawArtHeight = inputHeight - delta;
+      break;
+    }
+    case "matBoard": {
+      // Invert board = (art − 2·overlap) + 2·matWidth + 2·rabbetDepth
+      const delta = 2 * (matWidth + rabbetDepth - matOverlap);
+      rawArtWidth = inputWidth - delta;
+      rawArtHeight = inputHeight - delta;
+      break;
+    }
+  }
+
+  const artInvalid =
+    rawArtWidth < MIN_ART_DIMENSION || rawArtHeight < MIN_ART_DIMENSION;
+  const artWidth = Math.max(rawArtWidth, MIN_ART_DIMENSION);
+  const artHeight = Math.max(rawArtHeight, MIN_ART_DIMENSION);
 
   // matWidth is the visible mat border measured from the mat opening edge.
   const matOpeningWidth = artWidth - 2 * matOverlap;
@@ -86,6 +152,10 @@ export function frameGeometry(inputs: FrameInputs): FrameGeometry {
 
   return {
     name,
+    mode,
+    inputWidth,
+    inputHeight,
+    artInvalid,
     artWidth,
     artHeight,
     matWidth,
@@ -108,6 +178,33 @@ export function frameGeometry(inputs: FrameInputs): FrameGeometry {
     totalLumber: 2 * longSideRough + 2 * shortSideRough,
     miterAngle: 45,
   };
+}
+
+/**
+ * Toggle the input mode while keeping the rendered geometry identical —
+ * re-seeds `inputWidth` / `inputHeight` from the current geometry so the
+ * diagram doesn't jump when the user switches. Pure function.
+ */
+export function switchMode(prev: FrameInputs, next: InputMode): FrameInputs {
+  if (prev.mode === next) return prev;
+  const geo = frameGeometry(prev);
+  let inputWidth: number;
+  let inputHeight: number;
+  switch (next) {
+    case "artwork":
+      inputWidth = geo.artWidth;
+      inputHeight = geo.artHeight;
+      break;
+    case "frameOuter":
+      inputWidth = geo.outerWidth;
+      inputHeight = geo.outerHeight;
+      break;
+    case "matBoard":
+      inputWidth = geo.matBoardWidth;
+      inputHeight = geo.matBoardHeight;
+      break;
+  }
+  return { ...prev, mode: next, inputWidth, inputHeight };
 }
 
 export function formatFraction(value: number): string {
