@@ -44,3 +44,4 @@ firebase-debug.log
 *.tsbuildinfo
 next-env.d.ts
 .vscode/mcp.json
+.vscode/settings.json
