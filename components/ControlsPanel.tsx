@@ -1,13 +1,38 @@
 "use client";
 
-import { Ruler, ImageIcon, Square, Maximize2, Frame, Layers, Scissors, Printer, Tag } from "lucide-react";
+import { ImageIcon, Square, Maximize2, Frame, Layers, Scissors, Printer, Tag, AlertTriangle } from "lucide-react";
 import Slider from "./Slider";
-import { FrameInputs, FrameGeometry, formatFraction, formatPair } from "../lib/calculations";
+import {
+  FrameInputs,
+  FrameGeometry,
+  InputMode,
+  formatFraction,
+  formatPair,
+} from "../lib/calculations";
 
 interface ControlsPanelProps {
   geo: FrameGeometry;
   onInputChange: <K extends keyof FrameInputs>(key: K, value: FrameInputs[K]) => void;
+  onModeChange: (mode: InputMode) => void;
 }
+
+// Per-mode copy for the dimension section. Keeps the rest of the component
+// oblivious to which dimension is being held fixed.
+const MODE_META: Record<
+  InputMode,
+  { label: string; icon: React.ElementType; inputLabel: string }
+> = {
+  artwork:    { label: "ARTWORK SIZE",     icon: ImageIcon, inputLabel: "Artwork" },
+  frameOuter: { label: "FRAME OUTER SIZE", icon: Frame,     inputLabel: "Frame outer" },
+  matBoard:   { label: "MAT BOARD SIZE",   icon: Layers,    inputLabel: "Mat board" },
+};
+
+const MODE_ORDER: InputMode[] = ["artwork", "frameOuter", "matBoard"];
+const MODE_SHORT: Record<InputMode, string> = {
+  artwork: "Artwork",
+  frameOuter: "Frame",
+  matBoard: "Mat",
+};
 
 function SectionLabel({ icon: Icon, label, color = "#4A6FA5" }: { icon: React.ElementType; label: string; color?: string }) {
   return (
@@ -24,9 +49,11 @@ function Divider() {
   return <div className="h-px w-full bg-[#D4D0C8]" />;
 }
 
-export default function ControlsPanel({ geo, onInputChange }: ControlsPanelProps) {
+export default function ControlsPanel({ geo, onInputChange, onModeChange }: ControlsPanelProps) {
+  const meta = MODE_META[geo.mode];
+  const ModeIcon = meta.icon;
   return (
-    <div className="w-[380px] min-w-[380px] h-full bg-white border-r border-[#D4D0C8] overflow-y-auto flex flex-col gap-6 px-7 py-8">
+    <div className="w-[380px] min-w-[380px] h-full bg-white border-r border-[#D4D0C8] overflow-y-auto flex flex-col gap-4 px-7 py-5">
       {/* Header */}
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center gap-2.5">
@@ -43,7 +70,7 @@ export default function ControlsPanel({ geo, onInputChange }: ControlsPanelProps
       <Divider />
 
       {/* Project Name */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-2">
         <SectionLabel icon={Tag} label="PROJECT NAME" />
         <div className="flex items-center h-10 rounded bg-[#F8F6F1] border border-[#D4D0C8] px-3">
           <input
@@ -60,17 +87,50 @@ export default function ControlsPanel({ geo, onInputChange }: ControlsPanelProps
 
       <Divider />
 
-      {/* Artwork Size */}
-      <div className="flex flex-col gap-3">
-        <SectionLabel icon={ImageIcon} label="ARTWORK SIZE" />
+      {/* Input Mode toggle */}
+      <div className="flex flex-col gap-2">
+        <SectionLabel icon={Maximize2} label="FIXED DIMENSION" />
+        <div className="flex items-center rounded border border-[#D4D0C8] bg-[#F8F6F1] p-0.5">
+          {MODE_ORDER.map((m) => {
+            const active = geo.mode === m;
+            return (
+              <button
+                key={m}
+                type="button"
+                onClick={() => onModeChange(m)}
+                className={`flex-1 h-8 rounded text-[11px] font-mono font-medium tracking-[1px] transition-colors ${
+                  active
+                    ? "bg-[#4A6FA5] text-white"
+                    : "text-[#6B6860] hover:text-[#2C2C2C]"
+                }`}
+              >
+                {MODE_SHORT[m].toUpperCase()}
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-[11px] text-[#9A968E]">
+          Which dimension is pinned. Sliders vary the others around it.
+        </p>
+      </div>
+
+      <Divider />
+
+      {/* Dimensions (meaning depends on mode) */}
+      <div className="flex flex-col gap-2">
+        <SectionLabel icon={ModeIcon} label={meta.label} />
         <div className="flex items-center gap-3 w-full">
           <div className="flex flex-col gap-1 flex-1">
             <label className="text-[11px] text-[#6B6860]">Width</label>
-            <div className="flex items-center justify-between h-10 rounded bg-[#F8F6F1] border border-[#D4D0C8] px-3">
+            <div
+              className={`flex items-center justify-between h-10 rounded bg-[#F8F6F1] border px-3 ${
+                geo.artInvalid ? "border-[#C25B56]" : "border-[#D4D0C8]"
+              }`}
+            >
               <input
                 type="number"
-                value={geo.artWidth}
-                onChange={(e) => onInputChange("artWidth", parseFloat(e.target.value) || 0)}
+                value={geo.inputWidth}
+                onChange={(e) => onInputChange("inputWidth", parseFloat(e.target.value) || 0)}
                 className="w-full bg-transparent text-[14px] font-mono font-medium text-[#2C2C2C] outline-none"
               />
               <span className="text-[11px] text-[#9A968E] font-mono ml-1">in</span>
@@ -79,23 +139,41 @@ export default function ControlsPanel({ geo, onInputChange }: ControlsPanelProps
           <span className="text-[16px] text-[#9A968E] mt-4">&times;</span>
           <div className="flex flex-col gap-1 flex-1">
             <label className="text-[11px] text-[#6B6860]">Height</label>
-            <div className="flex items-center justify-between h-10 rounded bg-[#F8F6F1] border border-[#D4D0C8] px-3">
+            <div
+              className={`flex items-center justify-between h-10 rounded bg-[#F8F6F1] border px-3 ${
+                geo.artInvalid ? "border-[#C25B56]" : "border-[#D4D0C8]"
+              }`}
+            >
               <input
                 type="number"
-                value={geo.artHeight}
-                onChange={(e) => onInputChange("artHeight", parseFloat(e.target.value) || 0)}
+                value={geo.inputHeight}
+                onChange={(e) => onInputChange("inputHeight", parseFloat(e.target.value) || 0)}
                 className="w-full bg-transparent text-[14px] font-mono font-medium text-[#2C2C2C] outline-none"
               />
               <span className="text-[11px] text-[#9A968E] font-mono ml-1">in</span>
             </div>
           </div>
         </div>
+        {geo.artInvalid ? (
+          <div className="flex items-start gap-1.5 text-[11px] text-[#C25B56]">
+            <AlertTriangle size={12} className="mt-0.5 flex-shrink-0" />
+            <span>
+              Too small for these mat/frame settings — increase size or reduce mat/frame width.
+            </span>
+          </div>
+        ) : (
+          geo.mode !== "artwork" && (
+            <p className="text-[11px] text-[#9A968E]">
+              Fits artwork: <span className="font-mono text-[#6B6860]">{formatPair(geo.artWidth, geo.artHeight)}</span>
+            </p>
+          )
+        )}
       </div>
 
       <Divider />
 
       {/* Mat Width */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between w-full">
           <SectionLabel icon={Square} label="MAT WIDTH" />
           <div className="flex items-center h-7 rounded bg-[#F8F6F1] border border-[#D4D0C8] px-2.5">
@@ -111,7 +189,7 @@ export default function ControlsPanel({ geo, onInputChange }: ControlsPanelProps
       <Divider />
 
       {/* Mat Overlap */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between w-full">
           <SectionLabel icon={Maximize2} label="MAT OVERLAP" />
           <div className="flex items-center h-7 rounded bg-[#F8F6F1] border border-[#D4D0C8] px-2.5">
@@ -125,7 +203,7 @@ export default function ControlsPanel({ geo, onInputChange }: ControlsPanelProps
       </div>
 
       {/* Frame Width */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between w-full">
           <SectionLabel icon={Frame} label="FRAME WIDTH" />
           <div className="flex items-center h-7 rounded bg-[#F8F6F1] border border-[#D4D0C8] px-2.5">
@@ -141,7 +219,7 @@ export default function ControlsPanel({ geo, onInputChange }: ControlsPanelProps
       <Divider />
 
       {/* Rabbet Depth */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between w-full">
           <SectionLabel icon={Layers} label="RABBET DEPTH" />
           <div className="flex items-center h-7 rounded bg-[#F8F6F1] border border-[#D4D0C8] px-2.5">
